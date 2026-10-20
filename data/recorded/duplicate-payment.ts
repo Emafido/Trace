@@ -7,6 +7,8 @@ export interface RecordedSession {
   recordedAt: string;
   fixtureName: string;
   isRecorded: true;
+  isAIEvaluationRun: false;
+  disclaimer: string;
   learnerAnswers: {
     mitigation: string;
     selectedLine: number;
@@ -26,19 +28,21 @@ export interface RecordedSession {
 }
 
 /**
- * Authentic recorded session based on Fixture A (Strong Engineering Response).
- * This session provides a reliable presentation demo fallback if live LLM endpoints
- * are unavailable during the Talent Nation AI Rebuild presentation on October 21.
+ * Illustrative sample walkthrough based on Fixture A (Strong Engineering Response).
  *
  * Essential Honesty Rule:
- * This recorded session is strictly associated with these exact inputs.
- * It is never displayed as if it evaluated arbitrary user input.
+ * This is an illustrative demonstration walkthrough. Live AI evaluation was NOT run
+ * because LLM credentials were not configured in this environment.
+ * This benchmark demonstrates the expected evaluation criteria and verbatim quote matching.
+ * It is NEVER displayed as an evaluation of arbitrary learner submissions.
  */
 export const recordedDuplicatePaymentSession: RecordedSession = {
   incidentId: 'duplicate-payment',
   recordedAt: '2026-10-20T12:00:00Z',
-  fixtureName: 'Fixture A: Strong Engineering Response',
+  fixtureName: 'Fixture A: Strong Engineering Response (Illustrative Sample)',
   isRecorded: true,
+  isAIEvaluationRun: false,
+  disclaimer: 'Illustrative sample walkthrough — AI evaluation not run',
   learnerAnswers: {
     mitigation:
       'I would pause webhook processing or roll back PR #412 to prevent additional duplicate credits while preserving events for safe replay.',

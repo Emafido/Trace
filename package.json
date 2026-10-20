@@ -7,7 +7,7 @@
     "build": "bun --bun next build",
     "start": "bun --bun next start",
     "lint": "eslint",
-    "test": "vitest run",
+    "test": "bun test",
     "eval": "bun scripts/eval.ts"
   },
   "dependencies": {

@@ -41,7 +41,7 @@ describe('Recorded Demo Mode & Fixture Honesty (data/recorded/duplicate-payment.
 
     expect(nextState.currentStep).toBe('review');
     expect(nextState.isRecordedSession).toBe(true);
-    expect(nextState.recordedFixtureName).toBe('Fixture A: Strong Engineering Response');
+    expect(nextState.recordedFixtureName).toContain('Fixture A: Strong Engineering Response');
     expect(nextState.mitigation).toBe(recordedDuplicatePaymentSession.learnerAnswers.mitigation);
     expect(nextState.fix).toBe(recordedDuplicatePaymentSession.learnerAnswers.fix);
     expect(nextState.defense).toBe(recordedDuplicatePaymentSession.learnerAnswers.defense);

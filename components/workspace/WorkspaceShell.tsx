@@ -127,9 +127,9 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
           </div>
 
           {state.isRecordedSession ? (
-            <div className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-[#58A6FF]/15 border border-[#58A6FF]/40 text-[#58A6FF] flex items-center space-x-1.5 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#58A6FF] animate-pulse" />
-              <span>RECORDED DEMO</span>
+            <div className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center space-x-1.5 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span>SAMPLE WALKTHROUGH (NO AI)</span>
             </div>
           ) : (
             <button
@@ -140,10 +140,10 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
                   payload: recordedDuplicatePaymentSession,
                 })
               }
-              title="Replay authentic completed fixture session"
-              className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-[#181C22] hover:bg-[#1f242c] border border-[#262B33] hover:border-[#58A6FF]/60 text-[#9AA3AE] hover:text-[#58A6FF] transition-calm flex items-center space-x-1.5"
+              title="View illustrative sample walkthrough (AI evaluation not run)"
+              className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-[#181C22] hover:bg-[#1f242c] border border-[#262B33] hover:border-amber-500/60 text-[#9AA3AE] hover:text-amber-300 transition-calm flex items-center space-x-1.5"
             >
-              <span>Replay recorded example</span>
+              <span>Sample walkthrough</span>
             </button>
           )}
 

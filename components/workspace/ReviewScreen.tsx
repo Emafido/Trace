@@ -117,9 +117,9 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
             <span>Investigation Review</span>
           </div>
           {state.isRecordedSession && (
-            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded bg-[#58A6FF]/15 border border-[#58A6FF]/40 text-[#58A6FF] font-semibold flex items-center space-x-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#58A6FF]" />
-              <span>RECORDED SESSION</span>
+            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 font-semibold flex items-center space-x-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span>ILLUSTRATIVE SAMPLE WALKTHROUGH — AI EVALUATION NOT RUN</span>
             </span>
           )}
         </div>
@@ -127,8 +127,13 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
           Engineering Assessment & Reference Comparison
         </h3>
         {state.isRecordedSession && (
-          <div className="text-xs text-[#79C0FF] bg-[#388BFD]/10 p-2.5 rounded border border-[#388BFD]/25 font-mono leading-relaxed">
-            <strong>Recorded session:</strong> Displaying verified evaluation generated for {state.recordedFixtureName || 'Fixture A (Strong Engineering Response)'}.
+          <div className="text-xs text-amber-200/90 bg-amber-950/20 p-3 rounded border border-amber-500/30 font-mono leading-relaxed space-y-1">
+            <p>
+              <strong>Illustrative sample walkthrough — AI evaluation not run:</strong>
+            </p>
+            <p className="text-[11px] text-amber-200/70">
+              Live AI evaluation was not executed because provider credentials are not configured. This screen displays a static benchmark walkthrough demonstrating expected rubric grading and verbatim quote matching for {state.recordedFixtureName || 'Fixture A'}.
+            </p>
           </div>
         )}
         <p className="text-xs text-[#9AA3AE] leading-relaxed">
@@ -201,8 +206,8 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
           </div>
           <div className="flex items-center space-x-2">
             {state.isRecordedSession && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#58A6FF]/15 border border-[#58A6FF]/40 text-[#58A6FF] font-semibold">
-                RECORDED SESSION
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 font-semibold">
+                ILLUSTRATIVE BENCHMARK (NOT LIVE AI)
               </span>
             )}
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#181C22] border border-[#262B33] text-[#9AA3AE]">
