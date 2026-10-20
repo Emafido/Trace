@@ -174,11 +174,12 @@ To bridge the gap between deterministic unit mocks and real-world frontier model
   - `Fixture E` (Ambiguous): Validates conservative `unclear` classification.
 - **Transparent Credential Reporting**: Securely inspects environment variables (`LLM_API_KEY`, `LLM_MODEL`, `LLM_BASE_URL`) without leaking secrets. When unconfigured, it reports instructions for `.env.local` without fabricating model responses.
 
-### 8.2 Recorded Demo Mode & Essential Honesty Rule (`data/recorded/`)
+### 8.2 Illustrative Sample Walkthrough & Essential Honesty Rule (`data/recorded/`)
 To guarantee presentation reliability during the Talent Nation AI Rebuild Challenge (Demo Day October 21) without falsifying live evaluations:
-- **Strict Associativity**: Recorded AI outputs are strictly bound to authentic benchmark inputs (`Fixture A`). Trace **never** shows recorded AI evaluations for arbitrary user answers.
-- **Prominent Labeling**: Every recorded session visibly displays a prominent badge: `RECORDED SESSION` in both the top navigation bar, the review banner, and Section B.
-- **Activation Paths**: Activated via URL query parameters (`?demo=1`), manual click ("Replay recorded example"), or as a non-destructive fallback option during provider errors.
+- **Transparent Fallback (Option B)**: When live provider credentials are not configured, Trace provides a static benchmark walkthrough demonstrating the expected evaluation criteria and quote matching for Fixture A.
+- **Strict Honesty & Non-Masquerade**: Static fallback responses are never claimed to be model-generated. Every view is visibly labeled: `ILLUSTRATIVE SAMPLE WALKTHROUGH — AI EVALUATION NOT RUN` in the top banner and `ILLUSTRATIVE BENCHMARK (NOT LIVE AI)` in Section B.
+- **Strict Associativity**: Trace **never** shows pre-recorded or static evaluations for arbitrary user answers.
+- **Activation Paths**: Activated via URL query parameters (`?demo=1`), manual click ("Sample walkthrough"), or as a non-destructive fallback option during provider errors.
 
 ### 8.3 Invariant-Guarded Session Persistence (`lib/storage.ts`)
 Trace uses `sessionStorage` to prevent accidental browser refreshes from wiping progress while preventing state tampering:

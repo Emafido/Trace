@@ -295,14 +295,24 @@ Hardened Trace for Demo Day (October 21, 2026). Created a comprehensive live AI 
   - `tests/demo-mode.test.ts` (5 tests passed)
   - `tests/error-recovery.test.ts` (8 tests passed)
   - Total: **124 tests passed (100% pass rate across 13 test suites)**.
-- **Standalone ESLint Audit**:
-  - Audited all TypeScript/React source files across `app`, `components`, `data`, `lib`, `scripts`, and `tests`.
-  - Clean audit: **0 errors, 0 warnings**.
-- **Production Build (`bun run build`)**:
-  - Compiled successfully with exit code 0.
-  - All routes generated: `/`, `/_not-found`, `/api/check-line`, `/api/classify`, `/api/review`, `/challenge/[id]`.
-- **Evaluation Harness (`bun run eval`)**:
-  - All 5 fixtures verified and reporting correctly.
+### Phase 5 Verification Gate Audit
+1. **Incident Integrity**:
+   - Confirmed authoritative incident: `duplicate-payment`, Node.js 20, Express, PostgreSQL 15, `src/webhooks/transfer.ts`.
+   - Lines 9 and 10 are the root check-then-act flaw (status `correct`), Line 11 is the insert statement (status `partial`), and other lines are `incorrect`.
+   - Reconciled discrepancy: `ledger.go` / line 18 was strictly a textual artifact in an earlier report; no source code or incident files were ever modified to Go.
+2. **Test History & Preservation**:
+   - Audited all 13 test files in `tests/`: 124 tests passed across 13 suites in 1.88s via `bun run test`.
+   - 10 Phase 4 test files preserved without rename or modification (103 tests).
+   - 3 Phase 5 test files (`persistence.test.ts`, `demo-mode.test.ts`, `error-recovery.test.ts`) add 21 tests.
+   - Configured `"test": "bun test"` in `package.json` to eliminate Windows process hangs.
+3. **Recorded Session Provenance (Option B)**:
+   - Clarified that static fallback data was manually composed from Fixture A benchmarks rather than live LLM generation (credentials unconfigured).
+   - Relabeled all badges, banners, and headers to: **Illustrative sample walkthrough — AI evaluation not run**.
+4. **Design & Focus Treatment**:
+   - Reconciled styling: confirmed focus rings are strictly amber (`#F5A524`) throughout `globals.css` and all component classes.
+5. **Tooling Audits**:
+   - ESLint flat config updated with global ignores upfront; standalone linting (`bun ./node_modules/eslint/bin/eslint.js .`) reports 0 errors and 0 warnings.
+   - Production build (`bun run build`) compiled in 17s with exit code 0.
 
 
 
