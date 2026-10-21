@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -17,7 +18,7 @@ import {
 import { ExerciseState, ExerciseAction } from '@/lib/exerciseReducer';
 import { RubricEvaluationItem } from '@/lib/reviewEvaluator';
 import { findQuoteRange } from '@/lib/verify';
-import { APPROACH_DETAILS, ApproachCategory } from '@/lib/fixClassifier';
+import { APPROACH_DETAILS } from '@/lib/fixClassifier';
 
 interface ReviewScreenProps {
   state: ExerciseState;
@@ -582,14 +583,23 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
           AI interpretation can be wrong. Quotes are verified to exist in your text, but that doesn&apos;t prove they satisfy the check.
         </p>
 
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'RESET' })}
-          className="w-full py-2.5 px-4 rounded-[8px] bg-[#181C22] border border-[#262B33] hover:border-[#F5A524] text-[#E8EAED] text-sm font-semibold transition-calm flex items-center justify-center space-x-2"
-        >
-          <RotateCcw className="w-4 h-4 text-[#F5A524]" />
-          <span>Try again</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'RESET' })}
+            className="w-full sm:flex-1 py-2.5 px-4 rounded-[8px] bg-[#181C22] border border-[#262B33] hover:border-[#F5A524] text-[#E8EAED] text-xs sm:text-sm font-semibold transition-calm flex items-center justify-center space-x-2"
+          >
+            <RotateCcw className="w-4 h-4 text-[#F5A524]" />
+            <span>Try again</span>
+          </button>
+
+          <Link
+            href="/practice"
+            className="w-full sm:w-auto py-2.5 px-4 rounded-[8px] bg-[#12151A] hover:bg-[#181C22] border border-[#262B33] hover:border-[#3A424E] text-[#9AA3AE] hover:text-[#E8EAED] text-xs sm:text-sm font-medium transition-calm flex items-center justify-center space-x-2"
+          >
+            <span>Back to challenges</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

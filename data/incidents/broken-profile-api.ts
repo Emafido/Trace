@@ -33,6 +33,9 @@ export interface PublicIncident {
   title: string;
   role: string;
   type: string;
+  difficulty?: 'Beginner' | 'Intermediate';
+  skills?: string[];
+  isRecommended?: boolean;
   estimatedMinutes: number;
   summary: string;
   alert: string;
@@ -48,6 +51,9 @@ export const brokenProfilePublicIncident: PublicIncident = {
   title: 'The Profile Page That Stopped Working',
   role: 'Full-stack',
   type: 'Debugging',
+  difficulty: 'Beginner',
+  skills: ['API Design', 'Backward Compatibility', 'Incident Triage'],
+  isRecommended: true,
   estimatedMinutes: 7,
   summary:
     'After a deployment, users can no longer open their profiles. The API appears healthy, but profile requests keep failing.',

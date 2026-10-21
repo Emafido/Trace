@@ -356,6 +356,49 @@ Expanded Trace ahead of the live hackathon demonstration with three core deliver
   - Live deployment verified at `https://mytrace-self.vercel.app/` returning 200 OK with clean header, new hero, and both incident cards.
   - Local server verified running on `http://localhost:3000`.
 
+---
+
+## Phase 7: Research-Led UI/UX Upgrade & Information Architecture (Completed)
+
+### Summary
+Transformed Trace into a polished, developer-practice platform informed by HackerRank, LeetCode, CodeSignal, and Frontend Mentor UX patterns:
+1. **Three-Tier Information Architecture**:
+   - `/` — Product Introduction Landing Page: Restrained, authentic hero visual featuring the real profile API route failure (`GET /api/profile -> 404`, `GET /api/users/me -> 200`), clear 3-step value explanation ("Investigate", "Decide and defend", "Learn"), and direct CTAs to practice.
+   - `/practice` — Practice Hub: Discoverable engineering challenges (`broken-profile-api` recommended first, `duplicate-payment` second), skill tags, difficulty indicators, lightweight role filtering (`All`, `Full-stack`, `Backend`), and active session continuity with "Continue investigation".
+   - `/challenge/[id]` — Investigation Workspace: Preserved all 5-step exercise logic, deterministic code checks, and AI evaluation. Added breadcrumb navigation (`Practice / Incident Title`) and a clear "Back to challenges" link.
+2. **Session Continuity & Progressive Disclosure**:
+   - Integrated `sessionStorage` inspection (`getIncidentSessionInfo`) into `/practice` without adding accounts or cloud sync. Learners can resume unfinished investigations directly from challenge cards or the active resume banner.
+3. **Responsive Mobile-First Ergonomics**:
+   - Verified single-column stacking, touch targets $\ge 40\text{px}$, container-constrained horizontal code scrolling, and readable typography across 375px, 390px, 768px, 1024px, and 1280px viewports.
+
+---
+
+### Files Created & Modified
+- `app/page.tsx` — Product introduction landing page with hero diff/telemetry preview and How It Works guide.
+- `app/practice/page.tsx` — Practice Hub server component page.
+- `components/practice/PracticeHub.tsx` — Practice Hub client component with category filtering and session continuity.
+- `components/workspace/WorkspaceShell.tsx` — Updated header navigation with "Challenges" link and `Practice / [Incident]` breadcrumb.
+- `components/workspace/ReviewScreen.tsx` — Added "Back to challenges" link to footer alongside "Try again".
+- `data/incidents/broken-profile-api.ts` & `data/incidents/duplicate-payment.ts` — Added `difficulty`, `skills`, and `isRecommended` metadata.
+- `lib/storage.ts` — Added `getIncidentSessionInfo` helper for non-leaking session continuity detection.
+- `tests/information-architecture.test.ts` — 8 unit tests covering IA ordering, challenge metadata, and session continuity.
+
+---
+
+### Verification & Testing Results
+- **Vitest Unit & Integration Suite**:
+  - Total: **147 tests passed across 15 test files (100% pass rate in ~0.7s)**.
+  - Zero regressions on existing state machine, line checker, or review evaluator suites.
+- **Standalone ESLint Audit**:
+  - Ran `bun ./node_modules/eslint/bin/eslint.js app components data lib tests`.
+  - Audit: **0 errors, 0 warnings**.
+- **Production Build (`bun run build`)**:
+  - Compiled successfully with exit code 0.
+  - Prerendered routes: `/`, `/practice`, `/challenge/broken-profile-api`, `/challenge/duplicate-payment`.
+- **Local Server Verification**:
+  - All 4 routes verified HTTP 200 on `http://localhost:3000`.
+
+
 
 
 

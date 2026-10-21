@@ -1,4 +1,3 @@
-import { ReviewResult } from '@/lib/reviewEvaluator';
 import { serverBrokenProfileIncident } from '@/data/server/incidents/broken-profile-api';
 
 export const recordedBrokenProfileSession = {

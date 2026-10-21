@@ -27,7 +27,6 @@ import {
   MIN_DEFENSE_LENGTH,
 } from '@/lib/exerciseReducer';
 import {
-  approachCategories,
   duplicatePaymentCategories,
   brokenProfileCategories,
   APPROACH_DETAILS,

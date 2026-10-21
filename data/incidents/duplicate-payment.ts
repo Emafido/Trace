@@ -33,6 +33,9 @@ export interface PublicIncident {
   title: string;
   role: string;
   type: string;
+  difficulty?: 'Beginner' | 'Intermediate';
+  skills?: string[];
+  isRecommended?: boolean;
   estimatedMinutes: number;
   summary: string;
   alert: string;
@@ -47,6 +50,9 @@ export const publicIncident: PublicIncident = {
   title: 'Duplicate Payment Incident',
   role: 'Backend',
   type: 'Debugging',
+  difficulty: 'Intermediate',
+  skills: ['Distributed Systems', 'Concurrency & Locks', 'PostgreSQL'],
+  isRecommended: false,
   estimatedMinutes: 10,
   summary: 'A fintech webhook is crediting some customers twice. Investigate the deployment.',
   alert: "14:14 · Support: 14 tickets in 12 minutes: 'I was credited twice for one transfer.' No errors on the dashboard.",

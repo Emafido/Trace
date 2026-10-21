@@ -2,7 +2,7 @@
 
 import React, { useState, useReducer, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Terminal, Cpu, Clock, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Terminal, Cpu, Clock } from 'lucide-react';
 import { PublicIncident } from '@/data/incidents/duplicate-payment';
 import { exerciseReducer, initialExerciseState } from '@/lib/exerciseReducer';
 import { EvidencePane, EvidenceTab } from './EvidencePane';
@@ -100,31 +100,35 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
     <div className="min-h-screen bg-[#0B0D10] text-[#E8EAED] flex flex-col lg:h-screen lg:overflow-hidden">
       {/* Top Console Navigation */}
       <header className="border-b border-[#262B33] bg-[#12151A] px-3 sm:px-4 md:px-6 h-14 flex items-center justify-between shrink-0 z-20">
-        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <Link
-            href="/"
+            href="/practice"
             className="flex items-center space-x-1.5 text-xs font-mono text-[#9AA3AE] hover:text-[#E8EAED] transition-calm p-1.5 -ml-1.5 rounded-[6px] hover:bg-[#181C22] shrink-0"
-            aria-label="Back to Incident Library"
+            aria-label="Back to challenges"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Library</span>
+            <span className="hidden sm:inline">Challenges</span>
           </Link>
 
           <div className="h-4 w-px bg-[#262B33] shrink-0" />
 
-          <div className="flex items-center space-x-2 shrink-0">
+          <Link href="/" className="flex items-center space-x-2 shrink-0 group">
             <div className="w-6 h-6 rounded-[4px] bg-[#181C22] border border-[#262B33] flex items-center justify-center text-[#F5A524]">
               <Terminal className="w-3.5 h-3.5" />
             </div>
-            <span className="font-semibold text-sm tracking-tight text-[#E8EAED]">
+            <span className="font-semibold text-sm tracking-tight text-[#E8EAED] group-hover:text-[#F5A524] transition-calm">
               Trace
             </span>
-          </div>
+          </Link>
 
-          <div className="hidden md:flex items-center space-x-2 text-xs font-mono min-w-0 truncate">
-            <span className="text-[#9AA3AE]">/</span>
+          <nav aria-label="Breadcrumb" className="hidden sm:flex items-center space-x-2 text-xs font-mono min-w-0 truncate">
+            <span className="text-[#9AA3AE]/40">/</span>
+            <Link href="/practice" className="text-[#9AA3AE] hover:text-[#E8EAED] transition-calm shrink-0">
+              Practice
+            </Link>
+            <span className="text-[#9AA3AE]/40">/</span>
             <span className="text-[#E8EAED] font-medium truncate">{incident.title}</span>
-          </div>
+          </nav>
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">

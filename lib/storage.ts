@@ -146,3 +146,43 @@ export function clearExerciseSession(incidentId: string): boolean {
     return false;
   }
 }
+
+export interface IncidentSessionInfo {
+  inProgress: boolean;
+  stepLabel: string;
+  stepNumber: number | 'review';
+  isCompleted: boolean;
+}
+
+/**
+ * Returns light inspection info for the practice hub without exposing private answer data.
+ */
+export function getIncidentSessionInfo(incidentId: string): IncidentSessionInfo | null {
+  const session = loadExerciseSession(incidentId);
+  if (!session) return null;
+
+  const hasStarted =
+    session.currentStep !== 1 ||
+    session.mitigation.trim().length > 0 ||
+    session.mitigationLocked ||
+    session.lineCheckAttempts > 0 ||
+    session.fixSubmitted ||
+    session.reviewStatus === 'success';
+
+  if (!hasStarted) return null;
+
+  let stepLabel = 'Step 1: Mitigation';
+  if (session.currentStep === 2) stepLabel = 'Step 2: Line Check';
+  else if (session.currentStep === 3) stepLabel = 'Step 3: Fix';
+  else if (session.currentStep === 4) stepLabel = 'Step 4: Approach';
+  else if (session.currentStep === 5) stepLabel = 'Step 5: Defense';
+  else if (session.currentStep === 'review') stepLabel = 'Review';
+
+  return {
+    inProgress: true,
+    stepLabel,
+    stepNumber: session.currentStep,
+    isCompleted: session.currentStep === 'review' && session.reviewStatus === 'success',
+  };
+}
+
