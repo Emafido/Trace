@@ -232,6 +232,9 @@ export async function runEvaluationHarness() {
       actualApproach = classification.approach;
       approachMatches = (fixture.expectedApproach as string[]).includes(classification.approach);
 
+      // Brief breather between classification and review to respect API RPM limits
+      await new Promise((r) => setTimeout(r, 2000));
+
       // Step 2: Run real evaluateLearnerReview pipeline (includes deterministic quote verification)
       const serverIncident =
         fixture.incidentId === 'broken-profile-api'
@@ -293,7 +296,7 @@ export async function runEvaluationHarness() {
     });
 
     // Pause between fixtures to respect API rate limits and avoid sudden demand spikes
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 3500));
   }
 
   // Render Formatted Terminal Table

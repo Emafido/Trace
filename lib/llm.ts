@@ -79,6 +79,15 @@ export function getLLMConfig() {
   };
 }
 
+const GEMINI_FALLBACK_CHAIN = [
+  'gemini-3.8-flash',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-flash-lite-latest',
+  'gemini-3.5-flash',
+];
+
 /**
  * Executes a single chat completion request against the configured LLM endpoint.
  */
@@ -89,6 +98,8 @@ async function executeChatRequest(
   timeoutMs: number
 ): Promise<string> {
   const maxAttempts = 3;
+  let modelRotationIndex = GEMINI_FALLBACK_CHAIN.indexOf(config.model);
+  if (modelRotationIndex === -1) modelRotationIndex = 0;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const controller = new AbortController();
@@ -119,7 +130,17 @@ async function executeChatRequest(
       if (!response.ok) {
         const errorBody = await response.text().catch(() => '');
 
-        // Transient errors from Gemini (demand spike / rate limiting): retry with backoff
+        // If a model exceeded its quota, rotate to the next compatible Gemini flash model
+        if (response.status === 429 && errorBody.includes('Quota exceeded')) {
+          if (modelRotationIndex + 1 < GEMINI_FALLBACK_CHAIN.length) {
+            modelRotationIndex++;
+            config.model = GEMINI_FALLBACK_CHAIN[modelRotationIndex];
+            attempt = 0;
+            continue;
+          }
+        }
+
+        // Transient errors from Gemini (demand spike 503 or transient rate limit): retry with backoff
         if ((response.status === 429 || response.status === 503) && attempt < maxAttempts) {
           const backoff = attempt * 2500;
           await new Promise((resolve) => setTimeout(resolve, backoff));
