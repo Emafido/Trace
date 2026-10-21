@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     const reviewResult = await evaluateLearnerReview(
       { mitigation, fix, defense },
       {
+        id: serverIncident.id,
         rubric: serverIncident.rubric,
         referenceSolution: serverIncident.referenceSolution,
       }

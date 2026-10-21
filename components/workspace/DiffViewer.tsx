@@ -49,20 +49,20 @@ export function DiffViewer({
               onClick={() => onSelectLine(line.lineNum)}
               aria-pressed={isSelected}
               aria-label={`Line ${line.lineNum}: ${line.prefix} ${line.text}`}
-              className={`w-full flex items-stretch text-left transition-calm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A524] focus-visible:z-10 ${borderClass} ${bgClass}`}
+              className={`w-full flex items-center text-left transition-calm focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A524] focus-visible:z-10 min-h-[38px] md:min-h-[28px] ${borderClass} ${bgClass}`}
             >
               {/* Line number gutter */}
-              <span className="w-12 py-1 px-2.5 text-right text-[12px] text-[#9AA3AE] select-none border-r border-[#262B33]/60 shrink-0 font-mono">
+              <span className="w-12 py-2 md:py-1 px-2.5 text-right text-[12px] text-[#9AA3AE] select-none border-r border-[#262B33]/60 shrink-0 font-mono self-stretch flex items-center justify-end">
                 {line.lineNum}
               </span>
 
               {/* Diff marker (+, -, or blank) */}
-              <span className="w-6 py-1 text-center font-bold select-none shrink-0 text-xs">
+              <span className="w-6 py-2 md:py-1 text-center font-bold select-none shrink-0 text-xs self-stretch flex items-center justify-center">
                 {line.prefix !== ' ' ? line.prefix : ''}
               </span>
 
               {/* Code text */}
-              <span className="py-1 pr-4 whitespace-pre font-mono flex-1 text-left">
+              <span className="py-2 md:py-1 pr-4 whitespace-pre font-mono flex-1 text-left">
                 {line.text}
               </span>
             </button>

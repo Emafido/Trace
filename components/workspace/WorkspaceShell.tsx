@@ -9,7 +9,7 @@ import { EvidencePane, EvidenceTab } from './EvidencePane';
 import { StepperPane } from './StepperPane';
 
 import { loadExerciseSession, saveExerciseSession, clearExerciseSession } from '@/lib/storage';
-import { recordedDuplicatePaymentSession } from '@/data/recorded/duplicate-payment';
+import { getRecordedSession } from '@/data/recorded';
 
 interface WorkspaceShellProps {
   incident: PublicIncident;
@@ -27,10 +27,13 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
     const isDemo = params.get('demo') === '1' || params.get('demo_mode') === '1';
 
     if (isDemo) {
-      dispatch({
-        type: 'LOAD_RECORDED_SESSION',
-        payload: recordedDuplicatePaymentSession,
-      });
+      const sample = getRecordedSession(incident.id);
+      if (sample) {
+        dispatch({
+          type: 'LOAD_RECORDED_SESSION',
+          payload: sample,
+        });
+      }
       return;
     }
 
@@ -74,6 +77,16 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
     setActiveTab('diff');
   };
 
+  const handleLoadSample = () => {
+    const sample = getRecordedSession(incident.id);
+    if (sample) {
+      dispatch({
+        type: 'LOAD_RECORDED_SESSION',
+        payload: sample,
+      });
+    }
+  };
+
   const checkedResult =
     state.selectedLine && state.lineCheckResult && state.lineCheckExplanation
       ? {
@@ -84,22 +97,22 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
       : null;
 
   return (
-    <div className="min-h-screen bg-[#0B0D10] text-[#E8EAED] flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-[#0B0D10] text-[#E8EAED] flex flex-col lg:h-screen lg:overflow-hidden">
       {/* Top Console Navigation */}
-      <header className="border-b border-[#262B33] bg-[#12151A] px-4 md:px-6 h-14 flex items-center justify-between shrink-0 z-20">
-        <div className="flex items-center space-x-4">
+      <header className="border-b border-[#262B33] bg-[#12151A] px-3 sm:px-4 md:px-6 h-14 flex items-center justify-between shrink-0 z-20">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
           <Link
             href="/"
-            className="flex items-center space-x-1.5 text-xs font-mono text-[#9AA3AE] hover:text-[#E8EAED] transition-calm p-1.5 -ml-1.5 rounded-[6px] hover:bg-[#181C22]"
+            className="flex items-center space-x-1.5 text-xs font-mono text-[#9AA3AE] hover:text-[#E8EAED] transition-calm p-1.5 -ml-1.5 rounded-[6px] hover:bg-[#181C22] shrink-0"
             aria-label="Back to Incident Library"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Library</span>
           </Link>
 
-          <div className="h-4 w-px bg-[#262B33]" />
+          <div className="h-4 w-px bg-[#262B33] shrink-0" />
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             <div className="w-6 h-6 rounded-[4px] bg-[#181C22] border border-[#262B33] flex items-center justify-center text-[#F5A524]">
               <Terminal className="w-3.5 h-3.5" />
             </div>
@@ -108,13 +121,13 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
             </span>
           </div>
 
-          <div className="hidden md:flex items-center space-x-2 text-xs font-mono">
+          <div className="hidden md:flex items-center space-x-2 text-xs font-mono min-w-0 truncate">
             <span className="text-[#9AA3AE]">/</span>
-            <span className="text-[#E8EAED] font-medium">{incident.title}</span>
+            <span className="text-[#E8EAED] font-medium truncate">{incident.title}</span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
           <div className="hidden sm:flex items-center space-x-2 text-xs font-mono">
             <span className="px-2 py-0.5 rounded bg-[#181C22] border border-[#262B33] text-[#9AA3AE] flex items-center space-x-1">
               <Cpu className="w-3 h-3 text-[#9AA3AE]" />
@@ -129,36 +142,27 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
           {state.isRecordedSession ? (
             <div className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center space-x-1.5 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span>SAMPLE WALKTHROUGH (NO AI)</span>
+              <span className="hidden xs:inline">SAMPLE WALKTHROUGH (NO AI)</span>
+              <span className="xs:hidden">SAMPLE</span>
             </div>
           ) : (
             <button
               type="button"
-              onClick={() =>
-                dispatch({
-                  type: 'LOAD_RECORDED_SESSION',
-                  payload: recordedDuplicatePaymentSession,
-                })
-              }
+              onClick={handleLoadSample}
               title="View illustrative sample walkthrough (AI evaluation not run)"
               className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-[#181C22] hover:bg-[#1f242c] border border-[#262B33] hover:border-amber-500/60 text-[#9AA3AE] hover:text-amber-300 transition-calm flex items-center space-x-1.5"
             >
               <span>Sample walkthrough</span>
             </button>
           )}
-
-          <div className="text-xs font-mono px-2.5 py-1 rounded-[6px] bg-[#181C22] border border-[#262B33] text-[#F5A524] flex items-center space-x-1.5">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">TRIAGE ACTIVE</span>
-          </div>
         </div>
       </header>
 
       {/* Main Split Console Layout */}
-      {/* Desktop: 55% Left (Evidence), 45% Right (Stepper); Mobile: Stacked with evidence above stepper */}
-      <main className="flex-1 p-2 md:p-4 overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 h-[calc(100vh-3.5rem)]">
+      {/* Desktop: 55% Left (Evidence), 45% Right (Stepper); Mobile: Stacked with natural vertical flow */}
+      <main className="min-h-0 flex-1 p-2.5 sm:p-4 overflow-y-auto lg:overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 lg:h-[calc(100vh-3.5rem)]">
         {/* Left Pane: Evidence (~55% width -> 7 cols on 12-col grid = 58.3%) */}
-        <div className="lg:col-span-7 h-[500px] lg:h-full">
+        <div className="lg:col-span-7 min-h-[460px] lg:h-full">
           <EvidencePane
             incident={incident}
             activeTab={activeTab}
@@ -170,15 +174,17 @@ export function WorkspaceShell({ incident }: WorkspaceShellProps) {
         </div>
 
         {/* Right Pane: Stepper (~45% width -> 5 cols on 12-col grid = 41.7%) */}
-        <div className="lg:col-span-5 h-[600px] lg:h-full">
+        <div className="lg:col-span-5 min-h-[520px] lg:h-full">
           <StepperPane
             state={state}
             dispatch={dispatch}
             onSwitchToDiffTab={handleSwitchToDiff}
             incidentId={incident.id}
+            incident={incident}
           />
         </div>
       </main>
     </div>
   );
 }
+

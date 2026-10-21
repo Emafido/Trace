@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { publicIncident } from '@/data/incidents/duplicate-payment';
+import { getPublicIncident, getAllPublicIncidents } from '@/data/incidents';
 import { WorkspaceShell } from '@/components/workspace/WorkspaceShell';
 
 interface ChallengePageProps {
@@ -8,26 +8,35 @@ interface ChallengePageProps {
   }>;
 }
 
+export async function generateStaticParams() {
+  const incidents = getAllPublicIncidents();
+  return incidents.map((inc) => ({
+    id: inc.id,
+  }));
+}
+
 export async function generateMetadata({ params }: ChallengePageProps) {
   const { id } = await params;
-  if (id !== publicIncident.id) {
+  const incident = getPublicIncident(id);
+  if (!incident) {
     return {
       title: 'Incident Not Found — Trace',
     };
   }
 
   return {
-    title: `${publicIncident.title} — Trace Incident Workspace`,
-    description: publicIncident.summary,
+    title: `${incident.title} — Trace Incident Workspace`,
+    description: incident.summary,
   };
 }
 
 export default async function ChallengePage({ params }: ChallengePageProps) {
   const { id } = await params;
+  const incident = getPublicIncident(id);
 
-  if (id !== publicIncident.id) {
+  if (!incident) {
     notFound();
   }
 
-  return <WorkspaceShell incident={publicIncident} />;
+  return <WorkspaceShell incident={incident} />;
 }

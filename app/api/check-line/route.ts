@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerIncident } from '@/data/server/incidentRepository';
-import { publicIncident } from '@/data/incidents/duplicate-payment';
+import { getPublicIncident } from '@/data/incidents';
 import { checkLine } from '@/lib/lineChecker';
 
 const checkLineRequestSchema = z.object({
@@ -39,8 +39,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const publicIncident = getPublicIncident(incidentId);
     // Validate that the line exists within the incident diff
-    const maxLine = publicIncident.diffLines.length > 0
+    const maxLine = publicIncident && publicIncident.diffLines.length > 0
       ? Math.max(...publicIncident.diffLines.map((l) => l.lineNum))
       : 100;
 
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
 
     const status = checkLine(
       selectedLine,

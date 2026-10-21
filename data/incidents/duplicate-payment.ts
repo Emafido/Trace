@@ -5,6 +5,29 @@ export interface DiffLine {
   text: string;
 }
 
+export interface ApproachCategoryOption {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface StepPrompts {
+  step1: {
+    title: string;
+    description: string;
+    placeholder: string;
+  };
+  step2: {
+    title: string;
+    description: string;
+  };
+  step3: {
+    title: string;
+    description: string;
+    placeholder: string;
+  };
+}
+
 export interface PublicIncident {
   id: string;
   title: string;
@@ -16,6 +39,8 @@ export interface PublicIncident {
   contextMarkdown: string;
   diffLines: DiffLine[];
   telemetryLog: string;
+  approachCategories: ApproachCategoryOption[];
+  stepPrompts: StepPrompts;
 }
 export const publicIncident: PublicIncident = {
   id: 'duplicate-payment',
@@ -70,4 +95,52 @@ duplicate_ledger_references: 37
 http_5xx: 0
 p95_latency_ms: 41
 support_tickets_tagged_double_credit: 14`,
+  approachCategories: [
+    {
+      id: 'unique_constraint',
+      name: 'Unique constraint / idempotency key',
+      description: 'Enforces database-level uniqueness on transfer reference or atomic ON CONFLICT insertion.',
+    },
+    {
+      id: 'row_lock',
+      name: 'Database row lock',
+      description: 'Locks the database row (e.g. SELECT FOR UPDATE or advisory locks) during the transaction.',
+    },
+    {
+      id: 'redis_lock',
+      name: 'Redis distributed lock',
+      description: 'Acquires a distributed lock (e.g. via Redis/Redlock) per transfer reference across instances.',
+    },
+    {
+      id: 'app_cache',
+      name: 'In-memory / per-process check',
+      description: 'Coordinates deduplication in application memory or local process cache.',
+    },
+    {
+      id: 'other',
+      name: 'Something else',
+      description: 'A recognizable technical approach outside the standard categories.',
+    },
+    {
+      id: 'unclear',
+      name: 'Unclear approach',
+      description: 'Vague, incomplete, or ambiguous explanation without a distinct mechanism.',
+    },
+  ],
+  stepPrompts: {
+    step1: {
+      title: "It's 14:14 and customers are being credited twice. What do you do in the next two minutes to stop the damage, before writing any code?",
+      description: 'Be specific: what action, on what, and why it is safe.',
+      placeholder: 'Describe your emergency containment action (e.g. roll back PR #412 or pause the webhook consumer)...',
+    },
+    step2: {
+      title: 'Select the faulty line in deploy.diff.',
+      description: 'Click a line row in the diff pane on the left or use keyboard navigation to select it. Locate the exact line introducing the concurrency race condition.',
+    },
+    step3: {
+      title: "Explain the root cause and the fix you'd ship. Prose or code is fine.",
+      description: 'Describe how your solution permanently stops duplicate processing under concurrent delivery.',
+      placeholder: 'Example:\nI would add a UNIQUE constraint on ledger(reference) and wrap the handler in a single transaction with ON CONFLICT (reference) DO NOTHING...',
+    },
+  },
 };

@@ -113,10 +113,6 @@ export function EvidencePane({
             <span>context.md</span>
           </button>
         </div>
-
-        <div className="text-[11px] font-mono text-[#9AA3AE] pb-2 hidden sm:block">
-          READ-ONLY EVIDENCE
-        </div>
       </div>
 
       {/* Tab Panels with internal scrolling */}

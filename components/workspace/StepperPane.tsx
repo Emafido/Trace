@@ -28,17 +28,20 @@ import {
 } from '@/lib/exerciseReducer';
 import {
   approachCategories,
-  ApproachCategory,
+  duplicatePaymentCategories,
+  brokenProfileCategories,
   APPROACH_DETAILS,
 } from '@/lib/fixClassifier';
 import { ReviewScreen } from './ReviewScreen';
-import { recordedDuplicatePaymentSession } from '@/data/recorded/duplicate-payment';
+import { getRecordedSession } from '@/data/recorded';
+import { PublicIncident } from '@/data/incidents/duplicate-payment';
 
 interface StepperPaneProps {
   state: ExerciseState;
   dispatch: React.Dispatch<ExerciseAction>;
   onSwitchToDiffTab: () => void;
   incidentId: string;
+  incident?: PublicIncident;
 }
 
 export function StepperPane({
@@ -46,15 +49,34 @@ export function StepperPane({
   dispatch,
   onSwitchToDiffTab,
   incidentId,
+  incident,
 }: StepperPaneProps) {
   const [isCheckingLine, setIsCheckingLine] = useState(false);
   const [lineCheckError, setLineCheckError] = useState<string | null>(null);
   const [expandedCompletedStep, setExpandedCompletedStep] = useState<number | null>(null);
 
+  const availableCategories = incident?.approachCategories ||
+    (incidentId === 'broken-profile-api'
+      ? brokenProfileCategories.map((c) => APPROACH_DETAILS[c] || { id: c, name: c, description: '' })
+      : duplicatePaymentCategories.map((c) => APPROACH_DETAILS[c] || { id: c, name: c, description: '' }));
+
   // Step 4 state
   const [showOverrideMenu, setShowOverrideMenu] = useState(false);
-  const [manualSelectedApproach, setManualSelectedApproach] = useState<ApproachCategory>('unique_constraint');
+  const [manualSelectedApproach, setManualSelectedApproach] = useState<string>(
+    availableCategories[0]?.id || 'unique_constraint'
+  );
   const [isConfirmingApproach, setIsConfirmingApproach] = useState(false);
+
+  const handleReplaySample = () => {
+    const session = getRecordedSession(incidentId);
+    if (session) {
+      dispatch({
+        type: 'LOAD_RECORDED_SESSION',
+        payload: session,
+      });
+    }
+  };
+
 
   const {
     currentStep,
@@ -505,7 +527,7 @@ export function StepperPane({
                       Step 4: Approach
                     </span>
                     <span className="text-[#9AA3AE] font-mono">
-                      — {APPROACH_DETAILS[confirmedApproach as ApproachCategory]?.name || confirmedApproach}
+                      — {APPROACH_DETAILS[confirmedApproach]?.name || confirmedApproach}
                       <span className="ml-2 text-[10px] text-[#9AA3AE]">
                         ({classificationSource === 'ai' ? 'AI interpreted' : 'Manual selection'})
                       </span>
@@ -582,12 +604,11 @@ export function StepperPane({
                 <span>Immediate Containment</span>
               </div>
               <h3 className="text-lg font-semibold text-[#E8EAED]">
-                It&apos;s 14:14 and customers are being credited twice. What do
-                you do in the next two minutes to stop the damage, before writing
-                any code?
+                {incident?.stepPrompts?.step1?.title ||
+                  "It's 14:14 and customers are being credited twice. What do you do in the next two minutes to stop the damage, before writing any code?"}
               </h3>
               <p className="text-xs text-[#9AA3AE] leading-relaxed">
-                Be specific: what action, on what, and why it is safe.
+                {incident?.stepPrompts?.step1?.description || "Be specific: what action, on what, and why it is safe."}
               </p>
             </div>
 
@@ -605,7 +626,10 @@ export function StepperPane({
                     payload: e.target.value,
                   })
                 }
-                placeholder="Describe your emergency containment action (e.g. roll back PR #412 or pause the webhook consumer)..."
+                placeholder={
+                  incident?.stepPrompts?.step1?.placeholder ||
+                  "Describe your emergency containment action (e.g. roll back PR #412 or pause the webhook consumer)..."
+                }
                 className="w-full bg-[#0B0D10] border border-[#262B33] rounded-[8px] p-3 text-sm text-[#E8EAED] placeholder-[#9AA3AE]/50 focus:border-[#F5A524] transition-calm focus:outline-none"
               />
               <div className="flex items-center justify-between text-xs text-[#9AA3AE] font-mono">
@@ -770,12 +794,14 @@ export function StepperPane({
                 <span>Engineering Solution</span>
               </div>
               <h3 className="text-lg font-semibold text-[#E8EAED]">
-                Explain the root cause and the fix you&apos;d ship. Prose or
-                code is fine.
+                {incident?.stepPrompts?.step3?.title ||
+                  "Explain the root cause and the fix you'd ship. Prose or code is fine."}
               </h3>
               <p className="text-xs text-[#9AA3AE] leading-relaxed">
-                Describe how your solution permanently stops duplicate
-                processing under concurrent delivery.
+                {incident?.stepPrompts?.step3?.description ||
+                  (incidentId === 'broken-profile-api'
+                    ? 'Describe how your solution permanently restores profile requests without breaking older or cached clients.'
+                    : 'Describe how your solution permanently stops duplicate processing under concurrent delivery.')}
               </p>
             </div>
 
@@ -790,8 +816,10 @@ export function StepperPane({
                 onChange={(e) =>
                   dispatch({ type: 'UPDATE_FIX', payload: e.target.value })
                 }
-                placeholder={`Example:
-I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a single transaction with ON CONFLICT (reference) DO NOTHING...`}
+                placeholder={
+                  incident?.stepPrompts?.step3?.placeholder ||
+                  `Example:\nI would add a UNIQUE constraint on ledger(reference) and wrap the handler in a single transaction with ON CONFLICT (reference) DO NOTHING...`
+                }
                 className="w-full bg-[#0B0D10] border border-[#262B33] rounded-[8px] p-3 text-xs md:text-sm font-mono text-[#E8EAED] placeholder-[#9AA3AE]/50 focus:border-[#F5A524] transition-calm focus:outline-none"
               />
               <div className="flex items-center justify-between text-xs text-[#9AA3AE] font-mono">
@@ -875,12 +903,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      dispatch({
-                        type: 'LOAD_RECORDED_SESSION',
-                        payload: recordedDuplicatePaymentSession,
-                      })
-                    }
+                    onClick={handleReplaySample}
                     className="py-2 px-3 rounded-[6px] bg-[#181C22] border border-[#262B33] hover:border-[#58A6FF] text-[#58A6FF] font-semibold transition-calm flex items-center justify-center space-x-1.5"
                   >
                     <span>Replay recorded example</span>
@@ -895,7 +918,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                 <div className="p-4 rounded-[8px] bg-[#0B0D10] border border-[#262B33] space-y-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-[#F5A524] font-mono">
-                      {APPROACH_DETAILS[classifiedApproach as ApproachCategory]?.name || classifiedApproach}
+                      {APPROACH_DETAILS[classifiedApproach]?.name || classifiedApproach}
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#181C22] border border-[#262B33] text-[#9AA3AE]">
                       AI INTERPRETATION
@@ -907,7 +930,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                     </p>
                   )}
                   <p className="text-[11px] text-[#9AA3AE] italic">
-                    {APPROACH_DETAILS[classifiedApproach as ApproachCategory]?.description}
+                    {APPROACH_DETAILS[classifiedApproach]?.description}
                   </p>
                 </div>
 
@@ -928,7 +951,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                   <button
                     type="button"
                     onClick={() => {
-                      setManualSelectedApproach(classifiedApproach as ApproachCategory);
+                      setManualSelectedApproach(classifiedApproach);
                       setShowOverrideMenu(true);
                     }}
                     className="py-2.5 px-4 rounded-[8px] bg-[#181C22] border border-[#262B33] hover:border-[#9AA3AE] text-[#E8EAED] text-sm transition-calm"
@@ -951,16 +974,15 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                   </span>
                 </div>
                 <div className="space-y-1.5" role="radiogroup" aria-label="Fix approaches">
-                  {approachCategories.map((category) => {
-                    const info = APPROACH_DETAILS[category];
-                    const isSelected = manualSelectedApproach === category;
+                  {availableCategories.map((cat) => {
+                    const isSelected = manualSelectedApproach === cat.id;
                     return (
                       <button
-                        key={category}
+                        key={cat.id}
                         type="button"
                         role="radio"
                         aria-checked={isSelected}
-                        onClick={() => setManualSelectedApproach(category)}
+                        onClick={() => setManualSelectedApproach(cat.id)}
                         className={`w-full text-left p-3 rounded-[6px] text-xs transition-calm flex flex-col border ${
                           isSelected
                             ? 'bg-[#F5A524]/15 border-[#F5A524]/60 text-[#F5A524]'
@@ -968,11 +990,11 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                         }`}
                       >
                         <div className="flex items-center justify-between font-semibold">
-                          <span>{info.name}</span>
+                          <span>{cat.name}</span>
                           {isSelected && <Check className="w-3.5 h-3.5 text-[#F5A524]" />}
                         </div>
                         <span className="text-[11px] text-[#9AA3AE] mt-0.5 leading-snug">
-                          {info.description}
+                          {cat.description}
                         </span>
                       </button>
                     );
@@ -1033,7 +1055,9 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
 
               <h3 className="text-base font-semibold text-[#E8EAED] leading-snug pt-1">
                 {followUpQuestion ||
-                  'Walk through, step by step, what happens when two deliveries of the same event arrive 4 ms apart under your fix.'}
+                  (incidentId === 'broken-profile-api'
+                    ? 'Walk through what happens when an older frontend calls /api/profile after your proposed fix has been deployed.'
+                    : 'Walk through, step by step, what happens when two deliveries of the same event arrive 4 ms apart under your fix.')}
               </h3>
               <p className="text-xs text-[#9AA3AE] leading-relaxed">
                 Explain how your architecture holds up against this trade-off or boundary condition.
@@ -1129,12 +1153,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      dispatch({
-                        type: 'LOAD_RECORDED_SESSION',
-                        payload: recordedDuplicatePaymentSession,
-                      })
-                    }
+                    onClick={handleReplaySample}
                     className="py-2 px-3 rounded-[8px] bg-[#181C22] border border-[#262B33] hover:border-[#58A6FF] text-[#58A6FF] font-semibold text-xs transition-calm flex items-center justify-center space-x-2"
                   >
                     <span>Replay recorded example</span>
@@ -1149,28 +1168,7 @@ I would add a UNIQUE constraint on ledger(reference) and wrap the handler in a s
           </div>
         )}
       </div>
-
-      {/* Console Status Bar */}
-      <div className="border-t border-[#262B33] bg-[#181C22]/80 px-4 py-2.5 flex items-center justify-between text-[11px] text-[#9AA3AE] font-mono">
-        <div className="flex items-center space-x-2">
-          {state.isRecordedSession ? (
-            <>
-              <span className="w-2 h-2 rounded-full bg-[#58A6FF] inline-block animate-pulse" />
-              <span className="text-[#58A6FF] font-semibold">RECORDED DEMO MODE</span>
-            </>
-          ) : (
-            <>
-              <span className="w-2 h-2 rounded-full bg-[#3FB950] inline-block" />
-              <span>SESSION ACTIVE</span>
-            </>
-          )}
-        </div>
-        <div className="flex items-center space-x-3">
-          <span>LINE ATTEMPTS: {lineCheckAttempts}</span>
-          <span>•</span>
-          <span>STEP: {numericStep}/5</span>
-        </div>
-      </div>
     </section>
   );
 }
+

@@ -13,13 +13,16 @@ export interface FollowUpBranch {
 export interface ReferenceSolution {
   mitigation: string;
   rootCause: string;
-  dataRepairQuery: string;
-  constraintSql: string;
+  dataRepairQuery?: string;
+  constraintSql?: string;
+  codeSnippet?: string;
   permanentFix: string[];
   tradeOffs: {
     approach: string;
     tradeOff: string;
   }[];
+  prevention?: string[];
+  keyTakeaway?: string;
 }
 
 export interface ServerIncident {

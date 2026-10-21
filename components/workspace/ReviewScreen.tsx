@@ -421,14 +421,26 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
                     ))}
                   </ol>
                 </div>
-                <div>
-                  <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
-                    Required Constraint DDL:
+                {referenceSolution.constraintSql && (
+                  <div>
+                    <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
+                      Required Constraint DDL:
+                    </div>
+                    <pre className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#7EE787] text-[11px] overflow-x-auto">
+                      {referenceSolution.constraintSql}
+                    </pre>
                   </div>
-                  <pre className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#7EE787] text-[11px] overflow-x-auto">
-                    {referenceSolution.constraintSql}
-                  </pre>
-                </div>
+                )}
+                {referenceSolution.codeSnippet && (
+                  <div>
+                    <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
+                      Compatible Implementation:
+                    </div>
+                    <pre className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#7EE787] text-[11px] overflow-x-auto">
+                      {referenceSolution.codeSnippet}
+                    </pre>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -445,7 +457,7 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
               className="w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-[#181C22] transition-calm"
             >
               <span className="font-semibold text-[#E8EAED]">
-                4. Trade-off Defense ({confirmedApproach ? APPROACH_DETAILS[confirmedApproach as ApproachCategory]?.name : 'Approach'})
+                4. Trade-off Defense ({confirmedApproach ? (APPROACH_DETAILS[confirmedApproach]?.name || confirmedApproach) : 'Approach'})
               </span>
               {expandedComparison === 'tradeOff' ? (
                 <ChevronUp className="w-4 h-4 text-[#9AA3AE]" />
@@ -480,40 +492,87 @@ export function ReviewScreen({ state, dispatch }: ReviewScreenProps) {
             )}
           </div>
 
-          {/* Comparison Item 5: Data Repair (Reconciliation of already affected accounts) */}
-          <div className="rounded-[8px] bg-[#0B0D10] border border-[#262B33] overflow-hidden text-xs">
-            <button
-              type="button"
-              onClick={() =>
-                setExpandedComparison(
-                  expandedComparison === 'dataRepair' ? null : 'dataRepair'
-                )
-              }
-              className="w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-[#181C22] transition-calm"
-            >
-              <span className="font-semibold text-[#E8EAED]">5. Existing-Data Repair</span>
-              {expandedComparison === 'dataRepair' ? (
-                <ChevronUp className="w-4 h-4 text-[#9AA3AE]" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-[#9AA3AE]" />
-              )}
-            </button>
-            {expandedComparison === 'dataRepair' && (
-              <div className="p-3 border-t border-[#262B33] space-y-3 font-mono">
-                <p className="text-[#9AA3AE] text-xs leading-relaxed">
-                  Before applying a unique constraint, an engineering team must detect and resolve existing duplicated ledger entries created while the bug was live.
-                </p>
-                <div>
-                  <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
-                    Reconciliation Query:
+          {/* Comparison Item 5: Data Repair / Prevention */}
+          {referenceSolution.dataRepairQuery && (
+            <div className="rounded-[8px] bg-[#0B0D10] border border-[#262B33] overflow-hidden text-xs">
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedComparison(
+                    expandedComparison === 'dataRepair' ? null : 'dataRepair'
+                  )
+                }
+                className="w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-[#181C22] transition-calm"
+              >
+                <span className="font-semibold text-[#E8EAED]">5. Existing-Data Repair</span>
+                {expandedComparison === 'dataRepair' ? (
+                  <ChevronUp className="w-4 h-4 text-[#9AA3AE]" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-[#9AA3AE]" />
+                )}
+              </button>
+              {expandedComparison === 'dataRepair' && (
+                <div className="p-3 border-t border-[#262B33] space-y-3 font-mono">
+                  <p className="text-[#9AA3AE] text-xs leading-relaxed">
+                    Before applying a unique constraint, an engineering team must detect and resolve existing duplicated ledger entries created while the bug was live.
+                  </p>
+                  <div>
+                    <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
+                      Reconciliation Query:
+                    </div>
+                    <pre className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#7EE787] text-[11px] overflow-x-auto">
+                      {referenceSolution.dataRepairQuery}
+                    </pre>
                   </div>
-                  <pre className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#7EE787] text-[11px] overflow-x-auto">
-                    {referenceSolution.dataRepairQuery}
-                  </pre>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
+
+          {referenceSolution.prevention && (
+            <div className="rounded-[8px] bg-[#0B0D10] border border-[#262B33] overflow-hidden text-xs">
+              <button
+                type="button"
+                onClick={() =>
+                  setExpandedComparison(
+                    expandedComparison === 'prevention' ? null : 'prevention'
+                  )
+                }
+                className="w-full px-3.5 py-2.5 flex items-center justify-between hover:bg-[#181C22] transition-calm"
+              >
+                <span className="font-semibold text-[#E8EAED]">5. Regression Prevention & Key Takeaways</span>
+                {expandedComparison === 'prevention' ? (
+                  <ChevronUp className="w-4 h-4 text-[#9AA3AE]" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-[#9AA3AE]" />
+                )}
+              </button>
+              {expandedComparison === 'prevention' && (
+                <div className="p-3 border-t border-[#262B33] space-y-3 font-mono">
+                  <div>
+                    <div className="text-[11px] text-[#3FB950] mb-1 font-semibold uppercase">
+                      Prevention Strategies:
+                    </div>
+                    <ul className="bg-[#181C22] p-3 rounded border border-[#262B33] text-[#9AA3AE] text-xs space-y-1 list-disc list-inside leading-relaxed">
+                      {referenceSolution.prevention.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  {referenceSolution.keyTakeaway && (
+                    <div>
+                      <div className="text-[11px] text-[#F5A524] mb-1 font-semibold uppercase">
+                        Important Lesson:
+                      </div>
+                      <div className="bg-[#181C22] p-2.5 rounded border border-[#262B33] text-[#E8EAED] text-xs leading-relaxed">
+                        {referenceSolution.keyTakeaway}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

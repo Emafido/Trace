@@ -21,6 +21,7 @@ const classifyRequestSchema = z.discriminatedUnion('action', [
   }),
 ]);
 
+
 // Fallback schema for backward compatibility where action is omitted
 const implicitClassifySchema = z.object({
   incidentId: z.string().min(1).max(100),
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Try discriminated union first, then implicit classify
     let parsedData:
       | { action: 'classify'; incidentId: string; mitigation: string; fix: string }
-      | { action: 'confirm'; incidentId: string; confirmedApproach: (typeof approachCategories)[number] };
+      | { action: 'confirm'; incidentId: string; confirmedApproach: string };
 
     const unionResult = classifyRequestSchema.safeParse(body);
     if (unionResult.success) {
@@ -88,9 +89,11 @@ export async function POST(req: NextRequest) {
 
     // Action 2: Classify fix -> Exactly ONE LLM call
     const classification = await classifyLearnerFix(
+      parsedData.incidentId,
       parsedData.mitigation,
       parsedData.fix
     );
+
 
     const branch =
       serverIncident.followUpBranches[classification.approach] ||
