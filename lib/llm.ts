@@ -43,6 +43,9 @@ export interface StructuredLLMOptions<T> {
 export function getLLMConfig() {
   const apiKey =
     process.env.LLM_API_KEY ||
+    (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith('your')
+      ? process.env.OPENAI_API_KEY
+      : undefined) ||
     (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_api_key_here'
       ? process.env.GEMINI_API_KEY
       : undefined);
@@ -52,9 +55,10 @@ export function getLLMConfig() {
   }
 
   const isGemini = Boolean(
-    process.env.GEMINI_API_KEY &&
-    process.env.GEMINI_API_KEY !== 'your_api_key_here' &&
-    !process.env.LLM_BASE_URL
+    (process.env.GEMINI_API_KEY &&
+      process.env.GEMINI_API_KEY !== 'your_api_key_here' &&
+      !process.env.LLM_BASE_URL) ||
+      process.env.LLM_MODEL?.startsWith('gemini')
   );
 
   const baseUrl =

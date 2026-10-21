@@ -191,7 +191,7 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <p className="text-xs sm:text-sm text-[#9AA3AE] leading-relaxed">
-                  Inspect genuine git diffs, server logs, and user reports without artificial clues. Click directly on diff lines to test your hypothesis against deterministic compiler rules.
+                  Inspect realistic code diffs, server logs, and user reports without artificial clues. Click directly on diff lines to test your hypothesis against deterministic checks against curated incident answer keys.
                 </p>
               </div>
             </div>
@@ -224,9 +224,9 @@ export default function LandingPage() {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <div className="text-xs font-mono text-[#F5A524] font-medium">STEP 6</div>
+                  <div className="text-xs font-mono text-[#F5A524] font-medium">REVIEW</div>
                   <h3 className="text-lg sm:text-xl font-semibold text-[#E8EAED]">
-                    Learn
+                    Review — Learn
                   </h3>
                   <p className="text-xs sm:text-sm font-medium text-[#E8EAED]/90">
                     See what code verified, what AI interpreted, and how your reasoning compares with a curated reference.
