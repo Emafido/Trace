@@ -56,9 +56,10 @@ export function getLLMConfig() {
 
   const isGemini = Boolean(
     (process.env.GEMINI_API_KEY &&
-      process.env.GEMINI_API_KEY !== 'your_api_key_here' &&
-      !process.env.LLM_BASE_URL) ||
-      process.env.LLM_MODEL?.startsWith('gemini')
+      process.env.GEMINI_API_KEY !== 'your_api_key_here') ||
+      process.env.LLM_MODEL?.toLowerCase().includes('gemini') ||
+      process.env.LLM_BASE_URL?.includes('generativelanguage.googleapis.com') ||
+      apiKey.startsWith('AIza')
   );
 
   const baseUrl =
@@ -69,7 +70,7 @@ export function getLLMConfig() {
 
   const model =
     process.env.LLM_MODEL ||
-    (isGemini ? 'gemini-1.5-flash' : 'gpt-4o-mini');
+    (isGemini ? 'gemini-3.8-flash' : 'gemini-3.8-flash');
 
   return {
     apiKey,
@@ -87,83 +88,109 @@ async function executeChatRequest(
   userPrompt: string,
   timeoutMs: number
 ): Promise<string> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const maxAttempts = 3;
 
-  try {
-    const url = `${config.baseUrl}/chat/completions`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0,
-        response_format: { type: 'json_object' },
-      }),
-      signal: controller.signal,
-    });
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-    clearTimeout(timeoutId);
+    try {
+      const url = `${config.baseUrl}/chat/completions`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${config.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0,
+          response_format: { type: 'json_object' },
+        }),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => '');
+
+        // Transient errors from Gemini (demand spike / rate limiting): retry with backoff
+        if ((response.status === 429 || response.status === 503) && attempt < maxAttempts) {
+          const backoff = attempt * 2500;
+          await new Promise((resolve) => setTimeout(resolve, backoff));
+          continue;
+        }
+
+        throw new LLMError(
+          `LLM provider returned HTTP ${response.status}: ${errorBody.slice(0, 250)}`,
+          'PROVIDER_ERROR',
+          response.status >= 500 ? 502 : 500
+        );
+      }
+
+      const json = await response.json();
+      const content = json.choices?.[0]?.message?.content;
+
+      if (!content || typeof content !== 'string') {
+        throw new LLMError('LLM response message content was empty', 'EMPTY_RESPONSE', 502);
+      }
+
+      return content;
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof LLMError) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new LLMTimeoutError(`LLM request timed out after ${timeoutMs / 1000}s`);
+      }
+
+      if (attempt < maxAttempts) {
+        const backoff = attempt * 2000;
+        await new Promise((resolve) => setTimeout(resolve, backoff));
+        continue;
+      }
+
       throw new LLMError(
-        `LLM provider returned HTTP ${response.status}: ${errorBody.slice(0, 200)}`,
-        'PROVIDER_ERROR',
-        response.status >= 500 ? 502 : 500
+        error instanceof Error ? error.message : 'Unknown LLM network failure',
+        'NETWORK_ERROR',
+        502
       );
     }
-
-    const json = await response.json();
-    const content = json.choices?.[0]?.message?.content;
-
-    if (!content || typeof content !== 'string') {
-      throw new LLMError('LLM response message content was empty', 'EMPTY_RESPONSE', 502);
-    }
-
-    return content;
-  } catch (error) {
-    clearTimeout(timeoutId);
-
-    if (error instanceof LLMError) {
-      throw error;
-    }
-
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new LLMTimeoutError(`LLM request timed out after ${timeoutMs / 1000}s`);
-    }
-
-    throw new LLMError(
-      error instanceof Error ? error.message : 'Unknown LLM network failure',
-      'NETWORK_ERROR',
-      502
-    );
   }
+
+  throw new LLMError('Failed to execute chat request after retries', 'PROVIDER_ERROR', 502);
 }
 
 /**
- * Robust JSON extraction helper that handles raw JSON or markdown code-fenced JSON.
+ * Robust JSON extraction helper that handles raw JSON, markdown code-fenced JSON,
+ * or text with preliminary reasoning before JSON objects.
  */
 function extractJsonString(raw: string): string {
-  const trimmed = raw.trim();
-  const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  let content = raw.trim();
+  const fenceMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   if (fenceMatch) {
-    return fenceMatch[1].trim();
+    content = fenceMatch[1].trim();
   }
-  return trimmed;
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return content.slice(firstBrace, lastBrace + 1);
+  }
+  return content;
 }
 
 /**
  * Server-side structured LLM caller with:
  * - Temperature 0
- * - 20-second timeout
+ * - 30-second timeout for reasoning models
  * - Zod schema validation
  * - Exactly one retry if output fails schema validation
  * - Clear typed errors
@@ -176,7 +203,7 @@ export async function callStructuredLLM<T>(
     throw new LLMConfigError();
   }
 
-  const timeoutMs = options.timeoutMs ?? 20000;
+  const timeoutMs = options.timeoutMs ?? 40000;
 
   // First Attempt
   let rawContent: string;

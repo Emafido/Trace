@@ -37,6 +37,41 @@ export interface EvalFixture {
 
 export const EVAL_FIXTURES: EvalFixture[] = [
   {
+    id: 'fixture-f',
+    incidentId: 'broken-profile-api',
+    name: 'Fixture F: Strong Response (Broken Profile API)',
+    description: 'Covers rollback/compatibility alias containment, breaking contract change root cause, backward-compatible dual route fix, and API contract test prevention.',
+    mitigation:
+      'I would roll back deployment PR #248 immediately or deploy a compatibility alias for /api/profile to restore user profile access while preparing a staged migration.',
+    fix:
+      'The deployment renamed /api/profile to /api/users/me without retaining backward compatibility, returning 404 for active clients. I would mount both routes simultaneously: router.get("/api/profile", authenticate, getProfile) and router.get("/api/users/me", authenticate, getProfile) sharing the same handler.',
+    defense:
+      'Supporting dual routes ensures older mobile builds and cached web clients continue working uninterrupted. We will monitor route metrics and only decommission /api/profile after older traffic drops to zero.',
+    expectedApproach: ['dual_route'],
+    expectedRubric: {
+      r1: ['CAUGHT'],
+      r2: ['CAUGHT'],
+      r3: ['CAUGHT'],
+      r4: ['CAUGHT'],
+    },
+  },
+  {
+    id: 'fixture-g',
+    incidentId: 'broken-profile-api',
+    name: 'Fixture G: Weak Response (Broken Profile API)',
+    description: 'Superficial server restart without addressing client incompatibility or API contract.',
+    mitigation: 'I would restart the node processes and clear browser cache.',
+    fix: 'I would add more logging to the server and retry the request.',
+    defense: 'I would tell users to refresh their screens.',
+    expectedApproach: ['other', 'unclear'],
+    expectedRubric: {
+      r1: ['MISSED'],
+      r2: ['MISSED'],
+      r3: ['MISSED'],
+      r4: ['MISSED'],
+    },
+  },
+  {
     id: 'fixture-a',
     incidentId: 'duplicate-payment',
     name: 'Fixture A: Strong Response (Duplicate Payment)',
@@ -114,41 +149,6 @@ export const EVAL_FIXTURES: EvalFixture[] = [
     expectedApproach: ['unclear', 'other'],
     expectedRubric: {
       r1: ['MISSED', 'PARTIAL'],
-      r2: ['MISSED'],
-      r3: ['MISSED'],
-      r4: ['MISSED'],
-    },
-  },
-  {
-    id: 'fixture-f',
-    incidentId: 'broken-profile-api',
-    name: 'Fixture F: Strong Response (Broken Profile API)',
-    description: 'Covers rollback/compatibility alias containment, breaking contract change root cause, backward-compatible dual route fix, and API contract test prevention.',
-    mitigation:
-      'I would roll back deployment PR #248 immediately or deploy a compatibility alias for /api/profile to restore user profile access while preparing a staged migration.',
-    fix:
-      'The deployment renamed /api/profile to /api/users/me without retaining backward compatibility, returning 404 for active clients. I would mount both routes simultaneously: router.get("/api/profile", authenticate, getProfile) and router.get("/api/users/me", authenticate, getProfile) sharing the same handler.',
-    defense:
-      'Supporting dual routes ensures older mobile builds and cached web clients continue working uninterrupted. We will monitor route metrics and only decommission /api/profile after older traffic drops to zero.',
-    expectedApproach: ['dual_route'],
-    expectedRubric: {
-      r1: ['CAUGHT'],
-      r2: ['CAUGHT'],
-      r3: ['CAUGHT'],
-      r4: ['CAUGHT'],
-    },
-  },
-  {
-    id: 'fixture-g',
-    incidentId: 'broken-profile-api',
-    name: 'Fixture G: Weak Response (Broken Profile API)',
-    description: 'Superficial server restart without addressing client incompatibility or API contract.',
-    mitigation: 'I would restart the node processes and clear browser cache.',
-    fix: 'I would add more logging to the server and retry the request.',
-    defense: 'I would tell users to refresh their screens.',
-    expectedApproach: ['other', 'unclear'],
-    expectedRubric: {
-      r1: ['MISSED'],
       r2: ['MISSED'],
       r3: ['MISSED'],
       r4: ['MISSED'],
@@ -245,6 +245,7 @@ export async function runEvaluationHarness() {
           defense: fixture.defense,
         },
         {
+          id: serverIncident.id,
           rubric: serverIncident.rubric,
           referenceSolution: serverIncident.referenceSolution,
         }
@@ -290,6 +291,9 @@ export async function runEvaluationHarness() {
       error,
       rawReviewResult,
     });
+
+    // Pause between fixtures to respect API rate limits and avoid sudden demand spikes
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
 
   // Render Formatted Terminal Table
