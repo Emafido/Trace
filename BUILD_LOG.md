@@ -314,5 +314,48 @@ Hardened Trace for Demo Day (October 21, 2026). Created a comprehensive live AI 
    - ESLint flat config updated with global ignores upfront; standalone linting (`bun ./node_modules/eslint/bin/eslint.js .`) reports 0 errors and 0 warnings.
    - Production build (`bun run build`) compiled in 17s with exit code 0.
 
+---
+
+## Phase 6: Multi-Incident Support, UI De-Cluttering & Mobile Usability (Completed)
+
+### Summary
+Expanded Trace ahead of the live hackathon demonstration with three core deliverables:
+1. **Beginner-Friendly Incident**: Added "The Profile Page That Stopped Working" (`broken-profile-api`), an Express API route rename incident where renaming `/api/profile` to `/api/users/me` breaks legacy clients with 404s. Structured public incident, server-side answer keys (line 8 correct, line 12 partial), 4-item rubric (immediate mitigation, root cause, permanent dual-route fix, regression prevention), curated follow-up defense branches, and authentic illustrative sample walkthrough.
+2. **Multi-Incident Architecture**: Generalized `/api/check-line`, `/api/classify`, and `/api/review` dynamically by `incidentId` without duplicating code or leaking private keys to the client. Maintained 100% regression-free behavior for the original fintech incident (`duplicate-payment`).
+3. **UI De-Cluttering**: Stripped artificial system-status indicators ("v1.0.0", "SYSTEM READY", "TRIAGE ACTIVE", "SESSION ACTIVE", "LINE ATTEMPTS: 0 • STEP: 1/5", "1 available", and placeholder messages). Refocused UI on real engineering judgment.
+4. **Mobile Usability**: Replaced rigid desktop-only viewport constraints with natural scrolling (`min-h-screen lg:h-screen lg:overflow-hidden`) on mobile devices. Enlarged code diff tap targets to $\ge 38\text{px}$ touch height with flexible centering and word wrapping.
+
+---
+
+### Files Created & Modified
+- `data/incidents/broken-profile-api.ts` — Public incident metadata, 15 diff lines, Express/Node logs, context, step prompts, and 6 approach categories.
+- `data/server/incidents/broken-profile-api.ts` — Server-side answer keys (`faultyLines: [8]`, `partialLines: [12]`), line explanations, 4-item rubric, 6 follow-up branches, and reference solution.
+- `data/recorded/broken-profile-api.ts` & `data/recorded/index.ts` — Authentic illustrative sample walkthrough fixture for demo/fallback.
+- `data/incidents/index.ts` & `data/server/incidentRepository.ts` — Multi-incident registration and lookup functions (`getPublicIncident`, `getServerIncident`).
+- `app/api/check-line/route.ts` — Dynamic bounds checking based on incident diff length.
+- `lib/fixClassifier.ts` & `app/api/classify/route.ts` — Incident-specific classifier prompts and dynamic approach schemas.
+- `lib/reviewEvaluator.ts` & `app/api/review/route.ts` — Dynamic rubric generation and reference solution evaluation by incident ID.
+- `components/workspace/ReviewScreen.tsx` — Dynamic code snippet rendering (`router.get` vs SQL DDL) and incident-specific reference comparisons.
+- `components/workspace/StepperPane.tsx` — Incident-driven approach categories, prompts, recorded fixtures, and removed system status bar.
+- `components/workspace/WorkspaceShell.tsx` & `components/workspace/EvidencePane.tsx` — Mobile responsive layout, removed "TRIAGE ACTIVE" & "READ-ONLY EVIDENCE" badges.
+- `components/workspace/DiffViewer.tsx` — Touch-friendly diff line heights ($\ge 38\text{px}$) and responsive padding.
+- `app/page.tsx` — Clean homepage hero: "Real engineering problems. Better engineering judgment." Displaying `broken-profile-api` first, `duplicate-payment` second.
+- `tests/broken-profile-incident.test.ts` — 15 unit/integration tests for the new incident.
+
+---
+
+### Verification & Testing Results
+- **Vitest Unit & Integration Suite**:
+  - Total: **139 tests passed across 14 test files (100% pass rate in ~1.3s)**.
+  - Zero regressions on existing `duplicate-payment` test suites.
+- **Production Build (`bun run build`)**:
+  - Clean build in 16.5s with exit code 0.
+  - Statically generated both challenge routes (`/challenge/broken-profile-api` and `/challenge/duplicate-payment`).
+- **Live Deployment & Verification**:
+  - Pushed to `origin/master`.
+  - Live deployment verified at `https://mytrace-self.vercel.app/` returning 200 OK with clean header, new hero, and both incident cards.
+  - Local server verified running on `http://localhost:3000`.
+
+
 
 
